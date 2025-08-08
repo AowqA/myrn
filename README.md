@@ -1,50 +1,61 @@
-# Welcome to your Expo app 👋
+# myrn
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 项目简介
 
-## Get started
+myrn 是一个基于 React Native 和 Expo 的移动应用项目，支持跨平台开发（iOS 和 Android）。项目采用模块化设计，包含丰富的 UI 组件和功能模块。
 
-1. Install dependencies
+## 功能特性
 
-   ```bash
-   npm install
-   ```
+1. **图片选择与预览**：支持从相册选择图片并预览。
+2. **自定义按钮组件**：提供主题化按钮，支持自定义样式和事件。
+3. **导航布局**：使用 Expo Router 实现底部标签导航和堆栈导航。
+4. **响应式设计**：适配不同屏幕尺寸和设备。
 
-2. Start the app
+## 项目结构
 
-   ```bash
-   npx expo start
-   ```
+- `app/(tabs)`：底部标签导航相关页面。
+  - `_layout.tsx`：标签导航布局配置。
+  - `index.tsx`：主页面，包含图片选择和预览功能。
+- `components`：可复用的 UI 组件。
+  - `Button.tsx`：自定义按钮组件。
+  - `ImageViewer.tsx`：图片预览组件。
+- `app/_layout.tsx`：全局导航布局配置。
 
-In the output, you'll find options to open the app in a
+## 快速开始
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 安装依赖
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 运行项目
 
-## Learn more
+```bash
+npm start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 构建应用
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run build
+```
 
-## Join the community
+## 开发指南
 
-Join our community of developers creating universal apps.
+1. **环境要求**：
+   - Node.js 16+
+   - Expo CLI
+   - Android Studio 或 Xcode（用于模拟器运行）
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2. **代码规范**：
+   - 遵循 ESLint 和 Prettier 规范。
+   - 提交代码前运行 `npm run lint` 检查代码风格。
+
+## 贡献指南
+
+欢迎提交 Pull Request 或 Issue 来改进项目。
+
+## 许可证
+
+MIT
