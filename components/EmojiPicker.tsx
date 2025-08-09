@@ -1,7 +1,7 @@
 // 导入所需的组件和库
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { PropsWithChildren } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 // 定义组件的属性类型
 type Props = PropsWithChildren<{
@@ -17,7 +17,7 @@ export default function ModalComponent({isVisible, onClose, children}: Props) {
     <Modal animationType="slide" transparent={true} visible={isVisible}>
         <View style={styles.modalContent}>
             <View style={styles.titleContainer}>
-                <View style={styles.title}>Choose a sticker</View>
+                <Text style={styles.title}>Choose a sticker</Text>
                 <Pressable onPress={onClose}>
                     <MaterialIcons name="close" color="#fff" size={22}/>
                 </Pressable>
