@@ -54,7 +54,7 @@ export default function Button({ label, theme, onPress }: Props) {
             <Pressable 
                 style={styles.button} 
                 // 默认按钮点击事件处理函数，显示提示信息
-                onPress={() => alert('You pressed a button.')}
+                onPress={onPress}
             >
                 <Text style={styles.buttonLabel}>{label}</Text>
             </Pressable>

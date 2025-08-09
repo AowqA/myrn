@@ -5,7 +5,10 @@ import { StyleSheet, View } from "react-native"; // React Native 组件
 
 // 导入自定义组件
 import Button from '@/components/Button';
+import CircleButton from '@/components/CircleButton';
+import IconButton from '@/components/IconButton';
 import ImageViewer from '@/components/ImageViewer';
+
 
 // 导入占位图片
 const PlaceholderImage = require('@/assets/images/background-image.png');
@@ -14,6 +17,7 @@ const PlaceholderImage = require('@/assets/images/background-image.png');
 export default function Index() {
   // 使用 useState 钩子管理选中图片的状态
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
   
   // 异步函数，用于从图库选择图片
   const pickImageAsync = async() => {
@@ -28,11 +32,24 @@ export default function Index() {
     if(!result.canceled) {
       // 设置选中的图片 URI
       setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
     }else {
       // 如果用户取消选择，显示提示信息
       alert("You did not pick any image.")
     }
-  }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    alert("Add a sticker");
+  };
+
+  const onSaveImageAsync = () => {
+    alert("Image saved");
+  };
   
   // 渲染组件 UI
   return (
@@ -41,12 +58,20 @@ export default function Index() {
         {/* 使用 ImageViewer 组件显示图片 */}
         <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
       </View>
-      <View style={styles.footerContainer}>
-        {/* 选择图片按钮 */}
-        <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
-        {/* 使用图片按钮 */}
-        <Button label="Use this photo" />
-      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
     </View>
   );
 }
@@ -73,5 +98,13 @@ const styles = StyleSheet.create({
   footerContainer: {
     flex: 1 / 3,  // 弹性布局，占据 1/3 空间
     alignItems: 'center',  // 子元素水平居中
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
   },
 });
