@@ -20,7 +20,6 @@ export default function RootLayout() {
         },
       }}
     >
-      // 首页标签页
       <Tabs.Screen 
         name="index" 
         options={{ 
@@ -35,7 +34,6 @@ export default function RootLayout() {
           ),
         }} 
       />
-      // 关于页面标签页
       <Tabs.Screen
         name="about"
         options={{
