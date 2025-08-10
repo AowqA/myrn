@@ -1,8 +1,27 @@
-// 导入所需的库和组件
-import * as ImagePicker from 'expo-image-picker'; // 图片选择器库
-import { useState } from 'react'; // React 状态钩子
-import { ImageSourcePropType, StyleSheet, View } from 'react-native'; // React Native 组件
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+/**
+ * 主页面组件 - 图片编辑应用
+ * 
+ * 功能描述：
+ * 这是一个图片编辑应用的主页面，提供以下核心功能：
+ * 1. 从相册选择图片
+ * 2. 添加表情贴纸到图片上
+ * 3. 拖拽和缩放贴纸
+ * 4. 保存编辑后的图片到相册
+ * 
+ * 技术实现：
+ * - 使用expo-image-picker选择图片
+ * - 使用expo-media-library保存图片到相册
+ * - 使用react-native-gesture-handler处理手势
+ * - 使用react-native-view-shot捕获组件为图片
+ */
+
+// 导入必要的库和组件
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import { useRef, useState } from 'react';
+import { ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { captureRef } from 'react-native-view-shot';
 
 // 导入自定义组件
 import Button from '@/components/Button';
@@ -13,73 +32,113 @@ import EmojiSticker from '@/components/EmojiSticker';
 import IconButton from '@/components/IconButton';
 import ImageViewer from '@/components/ImageViewer';
 
-// 导入占位图片
+// 默认占位图片
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
-// 导出默认的首页组件
+/**
+ * 主页面组件
+ * 图片编辑应用的核心页面，管理整个应用的状态和交互
+ */
 export default function Index() {
-  // 使用 useState 钩子管理选中图片的状态
-  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
-  // 使用 useState 钩子管理是否显示应用选项的状态
-  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
-  // 使用 useState 钩子管理模态框是否可见的状态
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  // 使用 useState 钩子管理选中的表情的状态
-  const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
+  // 状态管理
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined); // 用户选择的图片URI
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false); // 是否显示编辑选项
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false); // 表情选择器是否可见
+  const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined); // 选中的表情贴纸
+  
+  // 权限管理
+  const [status, requestPermission] = MediaLibrary.usePermissions(); // 相册权限状态
+  const imageRef = useRef<View>(null); // 用于捕获图片的引用
 
-  // 异步函数，用于从图库选择图片
+  // 请求相册权限（如果尚未请求）
+  if (status === null) {
+    requestPermission();
+  }
+
+  /**
+   * 选择图片函数
+   * 打开系统相册让用户选择图片
+   */
   const pickImageAsync = async () => {
-    // 启动图片库选择器
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],  // 只允许选择图片
-      allowsEditing: true,  // 允许编辑图片
-      quality: 1,  // 图片质量
+      mediaTypes: ['images'], // 只显示图片
+      allowsEditing: true,    // 允许编辑（裁剪）
+      quality: 1,             // 最高质量
     });
-    
-    // 如果用户没有取消选择
+
     if (!result.canceled) {
-      // 设置选中的图片 URI
       setSelectedImage(result.assets[0].uri);
-      // 显示应用选项
-      setShowAppOptions(true);
+      setShowAppOptions(true); // 显示编辑选项
     } else {
-      // 如果用户取消选择，显示提示信息
       alert('You did not select any image.');
     }
   };
 
-  // 重置按钮点击事件处理函数
+  /**
+   * 重置函数
+   * 清除所有编辑状态，返回初始状态
+   */
   const onReset = () => {
-    // 隐藏应用选项
     setShowAppOptions(false);
   };
 
-  // 添加表情按钮点击事件处理函数
+  /**
+   * 添加贴纸函数
+   * 打开表情选择器模态框
+   */
   const onAddSticker = () => {
-    // 显示模态框
     setIsModalVisible(true);
   };
 
-  // 模态框关闭事件处理函数
+  /**
+   * 关闭模态框函数
+   * 关闭表情选择器
+   */
   const onModalClose = () => {
-    // 隐藏模态框
     setIsModalVisible(false);
   };
 
-  // 保存图片按钮点击事件处理函数
+  /**
+   * 保存图片函数
+   * 将当前编辑的图片保存到系统相册
+   */
   const onSaveImageAsync = async () => {
-    // TODO: 实现保存图片功能
+    try {
+      // 捕获当前显示的图片（包括贴纸）
+      const localUri = await captureRef(imageRef, {
+        height: 440,
+        quality: 1,
+      });
+
+      // 保存到相册
+      await MediaLibrary.saveToLibraryAsync(localUri);
+      if (localUri) {
+        alert('Saved!');
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
-  // 渲染组件 UI
+  /**
+   * 渲染主页面
+   * 根据当前状态显示不同的UI
+   */
   return (
     <GestureHandlerRootView style={styles.container}>
+      {/* 图片显示区域 */}
       <View style={styles.imageContainer}>
-        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
-        {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        {/* 可捕获的图片区域 */}
+        <View ref={imageRef} collapsable={false}>
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {/* 如果有选中的表情，显示表情贴纸 */}
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        </View>
       </View>
+
+      {/* 根据状态显示不同的操作界面 */}
       {showAppOptions ? (
-        // 选项容器视图，设置绝对定位和距离底部的距离
+        // 编辑模式：显示重置、添加贴纸、保存按钮
         <View style={styles.optionsContainer}>
           <View style={styles.optionsRow}>
             <IconButton icon="refresh" label="Reset" onPress={onReset} />
@@ -88,12 +147,14 @@ export default function Index() {
           </View>
         </View>
       ) : (
-        // 底部容器视图，设置子元素水平居中
+        // 初始模式：显示选择图片和使用当前图片按钮
         <View style={styles.footerContainer}>
           <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
           <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
         </View>
       )}
+
+      {/* 表情选择器模态框 */}
       <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
         <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
       </EmojiPicker>
@@ -101,31 +162,35 @@ export default function Index() {
   );
 }
 
-// 定义组件的样式
+// 样式定义
 const styles = StyleSheet.create({
-  // 容器样式
+  // 主容器样式：占满全屏，深色背景，居中显示
   container: {
-    flex: 1,  // 弹性布局，占据剩余空间
-    backgroundColor: '#25292e',  // 背景色
-    alignItems: 'center',  // 子元素水平居中
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
   },
-  // 图片容器样式
+  
+  // 图片容器：占据可用空间
   imageContainer: {
-    flex: 1,  // 弹性布局，占据剩余空间
+    flex: 1,
   },
-  // 底部容器样式
+  
+  // 底部操作区域：占据1/3空间，居中显示
   footerContainer: {
-    flex: 1 / 3,  // 弹性布局，占据 1/3 空间
-    alignItems: 'center',  // 子元素水平居中
+    flex: 1 / 3,
+    alignItems: 'center',
   },
-  // 选项容器样式
+  
+  // 编辑选项容器：绝对定位在底部
   optionsContainer: {
-    position: 'absolute',  // 绝对定位
-    bottom: 80,  // 距离底部的距离
+    position: 'absolute',
+    bottom: 80,
   },
-  // 选项行样式
+  
+  // 编辑选项行：水平排列按钮
   optionsRow: {
-    alignItems: 'center',  // 子元素垂直居中
-    flexDirection: 'row',  // 子元素水平排列
+    alignItems: 'center',
+    flexDirection: 'row',
   },
 });
