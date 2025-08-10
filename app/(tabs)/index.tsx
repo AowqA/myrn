@@ -2,6 +2,7 @@
 import * as ImagePicker from 'expo-image-picker'; // 图片选择器库
 import { useState } from 'react'; // React 状态钩子
 import { ImageSourcePropType, StyleSheet, View } from 'react-native'; // React Native 组件
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // 导入自定义组件
 import Button from '@/components/Button';
@@ -72,8 +73,7 @@ export default function Index() {
 
   // 渲染组件 UI
   return (
-    // 容器视图，设置背景色和子元素水平居中
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <View style={styles.imageContainer}>
         <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
         {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
@@ -97,7 +97,7 @@ export default function Index() {
       <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
         <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
       </EmojiPicker>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
