@@ -19,6 +19,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 type Props = {
   /** 图片的初始尺寸（宽高相同） */
   imageSize: number;
+  a = 1;
   /** 表情图片的资源路径 */
   stickerSource: ImageSourcePropType;
 };
