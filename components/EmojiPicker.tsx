@@ -23,8 +23,8 @@ interface Props extends PropsWithChildren {
   onClose: () => void;  // 关闭模态框的回调函数，通常由父组件提供
 }
 
-// 导出默认的 ModalComponent 组件，接收 isVisible、onClose 和 children 作为属性
-export default function ModalComponent({isVisible, onClose, children}: Props) {
+// 导出默认的 EmojiPicker 组件，接收 isVisible、onClose 和 children 作为属性
+export default function EmojiPicker({isVisible, onClose, children}: Props) {
   // 渲染组件 UI
   return (
     // Modal 组件创建模态框，从底部滑入的动画效果

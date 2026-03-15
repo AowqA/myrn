@@ -38,7 +38,7 @@ npm start
 ### 构建应用
 
 ```bash
-npm run build
+npx expo export
 ```
 
 ## 开发指南
