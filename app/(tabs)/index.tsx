@@ -1,153 +1,50 @@
-/**
- * 主页面组件 - 图片编辑应用
- *
- * 功能描述：
- * 这是一个图片编辑应用的主页面，提供以下核心功能：
- * 1. 从相册选择图片
- * 2. 添加表情贴纸到图片上
- * 3. 拖拽和缩放贴纸
- * 4. 保存编辑后的图片到相册
- * 5. 贴纸快速操作（随机贴纸、清除贴纸、大小调节）
- * 6. 支持上传自定义 Emoji 作为贴纸
- */
-
 import domtoimage from 'dom-to-image';
-import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, ImageSourcePropType, Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { captureRef } from 'react-native-view-shot';
 
 import Button from '@/components/Button';
-import CircleButton from '@/components/CircleButton';
+import EditorToolbar from '@/components/EditorToolbar';
 import EmojiList from '@/components/EmojiList';
 import EmojiPicker from '@/components/EmojiPicker';
 import EmojiSticker from '@/components/EmojiSticker';
-import IconButton from '@/components/IconButton';
 import ImageViewer from '@/components/ImageViewer';
+import StickerActionsBar from '@/components/StickerActionsBar';
+import { useStickerEditor } from '@/hooks/useStickerEditor';
+import { useEffect, useRef } from 'react';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
-const BuiltInStickerOptions: ImageSourcePropType[] = [
-  require('@/assets/images/emoji1.png'),
-  require('@/assets/images/emoji2.png'),
-  require('@/assets/images/emoji3.png'),
-  require('@/assets/images/emoji4.png'),
-  require('@/assets/images/emoji5.png'),
-  require('@/assets/images/emoji6.png'),
-  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f60e.png' },
-  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f389.png' },
-  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f680.png' },
-  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png' },
-];
-
-const DEFAULT_STICKER_SIZE = 40;
-const MIN_STICKER_SIZE = 24;
-const MAX_STICKER_SIZE = 96;
-
 export default function Index() {
-  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
-  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
-  const [stickerSize, setStickerSize] = useState<number>(DEFAULT_STICKER_SIZE);
-  const [customStickers, setCustomStickers] = useState<ImageSourcePropType[]>([]);
-
   const [status, requestPermission] = MediaLibrary.usePermissions();
   const imageRef = useRef<View>(null);
 
-  const stickerOptions = useMemo(
-    () => [...customStickers, ...BuiltInStickerOptions],
-    [customStickers],
-  );
+  const {
+    selectedImage,
+    showAppOptions,
+    isModalVisible,
+    pickedEmoji,
+    stickerSize,
+    stickerOptions,
+    pickImageAsync,
+    onAddCustomEmoji,
+    onReset,
+    onRandomSticker,
+    onIncreaseStickerSize,
+    onDecreaseStickerSize,
+    onClearSticker,
+    onSelectSticker,
+    openStickerPicker,
+    closeStickerPicker,
+    enableEditor,
+  } = useStickerEditor();
 
   useEffect(() => {
     if (status === null) {
       requestPermission();
     }
   }, [requestPermission, status]);
-
-  const pickImageAsync = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-      setShowAppOptions(true);
-    } else {
-      alert('You did not select any image.');
-    }
-  };
-
-  const onAddCustomEmoji = async () => {
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Permission required', 'Please allow photo library access to upload a custom emoji.');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        const uploadedEmoji = { uri: result.assets[0].uri };
-        setCustomStickers(previous => [uploadedEmoji, ...previous]);
-        setPickedEmoji(uploadedEmoji);
-        setShowAppOptions(true);
-        onModalClose();
-      }
-    } catch {
-      Alert.alert('Upload failed', 'Unable to upload emoji right now. Please try again.');
-    }
-  };
-
-  const onReset = () => {
-    setShowAppOptions(false);
-    setSelectedImage(undefined);
-    setPickedEmoji(undefined);
-    setIsModalVisible(false);
-    setStickerSize(DEFAULT_STICKER_SIZE);
-  };
-
-  const onAddSticker = () => {
-    setIsModalVisible(true);
-  };
-
-  const onModalClose = () => {
-    setIsModalVisible(false);
-  };
-
-  const onClearSticker = () => {
-    setPickedEmoji(undefined);
-  };
-
-  const onRandomSticker = () => {
-    if (stickerOptions.length === 0) {
-      Alert.alert('No stickers available', 'Please add or upload a sticker first.');
-      return;
-    }
-
-    const randomIndex = Math.floor(Math.random() * stickerOptions.length);
-    setPickedEmoji(stickerOptions[randomIndex]);
-    setShowAppOptions(true);
-  };
-
-  const onIncreaseStickerSize = () => {
-    setStickerSize(previous => Math.min(previous + 8, MAX_STICKER_SIZE));
-  };
-
-  const onDecreaseStickerSize = () => {
-    setStickerSize(previous => Math.max(previous - 8, MIN_STICKER_SIZE));
-  };
 
   const onSaveImageAsync = async () => {
     if (Platform.OS !== 'web') {
@@ -193,32 +90,27 @@ export default function Index() {
 
       {showAppOptions ? (
         <View style={styles.optionsContainer}>
-          <View style={styles.optionsRow}>
-            <IconButton icon="refresh" label="Reset" onPress={onReset} />
-            <CircleButton onPress={onAddSticker} />
-            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
-          </View>
-
-          <View style={styles.optionsRowSecondary}>
-            <IconButton icon="auto-awesome" label="Random" onPress={onRandomSticker} />
-            <IconButton icon="zoom-out" label="Smaller" onPress={onDecreaseStickerSize} />
-            <IconButton icon="zoom-in" label="Bigger" onPress={onIncreaseStickerSize} />
-            <IconButton icon="delete-outline" label="Clear" onPress={onClearSticker} />
-          </View>
+          <EditorToolbar onReset={onReset} onAddSticker={openStickerPicker} onSave={onSaveImageAsync} />
+          <StickerActionsBar
+            onRandom={onRandomSticker}
+            onSmaller={onDecreaseStickerSize}
+            onBigger={onIncreaseStickerSize}
+            onClear={onClearSticker}
+          />
         </View>
       ) : (
         <View style={styles.footerContainer}>
           <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
-          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+          <Button label="Use this photo" onPress={enableEditor} />
           <Button label="Surprise me with sticker" onPress={onRandomSticker} />
         </View>
       )}
 
-      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+      <EmojiPicker isVisible={isModalVisible} onClose={closeStickerPicker}>
         <EmojiList
           emojiOptions={stickerOptions}
-          onSelect={setPickedEmoji}
-          onCloseModal={onModalClose}
+          onSelect={onSelectSticker}
+          onCloseModal={closeStickerPicker}
           onAddCustomEmoji={onAddCustomEmoji}
         />
       </EmojiPicker>
@@ -244,13 +136,5 @@ const styles = StyleSheet.create({
     bottom: 40,
     alignItems: 'center',
     gap: 8,
-  },
-  optionsRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  optionsRowSecondary: {
-    alignItems: 'center',
-    flexDirection: 'row',
   },
 });

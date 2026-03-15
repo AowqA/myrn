@@ -6,11 +6,13 @@
  */
 
 import { Image } from 'expo-image';
-import { FlatList, ImageSourcePropType, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { StickerOption } from '@/features/stickers/stickerSources';
 
 interface Props {
-  emojiOptions: ImageSourcePropType[];
-  onSelect: (image: ImageSourcePropType) => void;
+  emojiOptions: StickerOption[];
+  onSelect: (sticker: StickerOption) => void;
   onCloseModal: () => void;
   onAddCustomEmoji: () => void;
 }
@@ -29,7 +31,7 @@ export default function EmojiList({ emojiOptions, onSelect, onCloseModal, onAddC
         horizontal
         showsHorizontalScrollIndicator={Platform.OS === 'web'}
         data={emojiOptions}
-        keyExtractor={(_, index) => index.toString()}
+        keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => (
           <Pressable
@@ -39,7 +41,7 @@ export default function EmojiList({ emojiOptions, onSelect, onCloseModal, onAddC
             }}
             style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
           >
-            <Image source={item} style={styles.image} contentFit="contain" />
+            <Image source={item.source} style={styles.image} contentFit="contain" />
           </Pressable>
         )}
       />

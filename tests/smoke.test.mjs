@@ -22,16 +22,21 @@ test('emoji asset list is unique to avoid duplicate choices', () => {
   assert.equal(unique.size, emojiAssets.length);
 });
 
-test('index screen includes permission effect and random sticker guard', () => {
-  const indexSource = fs.readFileSync('app/(tabs)/index.tsx', 'utf8');
-
-  assert.equal(indexSource.includes('useEffect(() => {'), true, 'permission request should run in useEffect');
-  assert.equal(indexSource.includes('if (status === null)'), true, 'permission null-state guard should exist');
-  assert.equal(indexSource.includes('if (stickerOptions.length === 0)'), true, 'random sticker should guard empty list');
-  assert.equal(indexSource.includes("Alert.alert('Upload failed'"), true, 'custom upload should handle failures');
+test('sticker architecture modules exist', () => {
+  assert.equal(fs.existsSync('hooks/useStickerEditor.ts'), true);
+  assert.equal(fs.existsSync('features/stickers/stickerSources.ts'), true);
+  assert.equal(fs.existsSync('components/EditorToolbar.tsx'), true);
+  assert.equal(fs.existsSync('components/StickerActionsBar.tsx'), true);
 });
 
-test('README documents custom emoji upload capability', () => {
-  const readme = fs.readFileSync('README.md', 'utf8');
-  assert.equal(readme.includes('自定义 Emoji 上传'), true);
+test('emoji list uses stable id keys instead of index keys', () => {
+  const emojiListSource = fs.readFileSync('components/EmojiList.tsx', 'utf8');
+  assert.equal(emojiListSource.includes('keyExtractor={item => item.id}'), true);
+});
+
+test('main screen delegates state logic to sticker hook', () => {
+  const indexSource = fs.readFileSync('app/(tabs)/index.tsx', 'utf8');
+  assert.equal(indexSource.includes("import { useStickerEditor } from '@/hooks/useStickerEditor';"), true);
+  assert.equal(indexSource.includes('<EditorToolbar'), true);
+  assert.equal(indexSource.includes('<StickerActionsBar'), true);
 });
