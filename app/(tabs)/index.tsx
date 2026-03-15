@@ -8,18 +8,13 @@
  * 3. 拖拽和缩放贴纸
  * 4. 保存编辑后的图片到相册
  * 5. 贴纸快速操作（随机贴纸、清除贴纸、大小调节）
- *
- * 技术实现：
- * - 使用expo-image-picker选择图片
- * - 使用expo-media-library保存图片到相册
- * - 使用react-native-gesture-handler处理手势
- * - 使用react-native-view-shot捕获组件为图片
+ * 6. 支持上传自定义 Emoji 作为贴纸
  */
 
 import domtoimage from 'dom-to-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ImageSourcePropType, Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { captureRef } from 'react-native-view-shot';
@@ -33,13 +28,18 @@ import IconButton from '@/components/IconButton';
 import ImageViewer from '@/components/ImageViewer';
 
 const PlaceholderImage = require('@/assets/images/background-image.png');
-const StickerOptions: ImageSourcePropType[] = [
+
+const BuiltInStickerOptions: ImageSourcePropType[] = [
   require('@/assets/images/emoji1.png'),
   require('@/assets/images/emoji2.png'),
   require('@/assets/images/emoji3.png'),
   require('@/assets/images/emoji4.png'),
   require('@/assets/images/emoji5.png'),
   require('@/assets/images/emoji6.png'),
+  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f60e.png' },
+  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f389.png' },
+  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f680.png' },
+  { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png' },
 ];
 
 const MIN_STICKER_SIZE = 24;
@@ -51,9 +51,15 @@ export default function Index() {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
   const [stickerSize, setStickerSize] = useState<number>(40);
+  const [customStickers, setCustomStickers] = useState<ImageSourcePropType[]>([]);
 
   const [status, requestPermission] = MediaLibrary.usePermissions();
   const imageRef = useRef<View>(null);
+
+  const stickerOptions = useMemo(
+    () => [...customStickers, ...BuiltInStickerOptions],
+    [customStickers],
+  );
 
   if (status === null) {
     requestPermission();
@@ -71,6 +77,23 @@ export default function Index() {
       setShowAppOptions(true);
     } else {
       alert('You did not select any image.');
+    }
+  };
+
+  const onAddCustomEmoji = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uploadedEmoji = { uri: result.assets[0].uri };
+      setCustomStickers(previous => [uploadedEmoji, ...previous]);
+      setPickedEmoji(uploadedEmoji);
+      setShowAppOptions(true);
+      onModalClose();
     }
   };
 
@@ -95,8 +118,8 @@ export default function Index() {
   };
 
   const onRandomSticker = () => {
-    const randomIndex = Math.floor(Math.random() * StickerOptions.length);
-    setPickedEmoji(StickerOptions[randomIndex]);
+    const randomIndex = Math.floor(Math.random() * stickerOptions.length);
+    setPickedEmoji(stickerOptions[randomIndex]);
     setShowAppOptions(true);
   };
 
@@ -174,7 +197,12 @@ export default function Index() {
       )}
 
       <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
-        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+        <EmojiList
+          emojiOptions={stickerOptions}
+          onSelect={setPickedEmoji}
+          onCloseModal={onModalClose}
+          onAddCustomEmoji={onAddCustomEmoji}
+        />
       </EmojiPicker>
     </GestureHandlerRootView>
   );
