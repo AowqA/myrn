@@ -1,29 +1,65 @@
-// 导入所需的 React Native 组件
-import { StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
-// 导出默认的关于页面组件
 export default function AboutScreen() {
-    // 渲染组件 UI
-    return (
-        <View style={styles.container}>
-            <Text style={styles.text}>About Screen</Text>
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>关于 MyRN 贴纸编辑器</Text>
+
+      <Text style={styles.sectionTitle}>功能简介</Text>
+      <Text style={styles.description}>• 从相册选择图片并添加 Emoji 贴纸。</Text>
+      <Text style={styles.description}>• 支持上传自定义 Emoji，支持随机/清除/缩放。</Text>
+      <Text style={styles.description}>• 重置仅清空当前编辑状态，不删除你已上传的 Emoji。</Text>
+
+      <Text style={styles.sectionTitle}>隐私说明</Text>
+      <Text style={styles.description}>• 仅在你授权后访问相册。</Text>
+      <Text style={styles.description}>• 上传的自定义 Emoji 仅保存在当前应用会话内。</Text>
+
+      <Text style={styles.sectionTitle}>反馈</Text>
+      <Pressable onPress={() => Linking.openURL('mailto:feedback@myrn.app')}>
+        <Text style={styles.link}>feedback@myrn.app</Text>
+      </Pressable>
+
+      <Text style={styles.meta}>Version: 1.0.0</Text>
+    </View>
+  );
 }
 
-// 定义组件的样式
 const styles = StyleSheet.create({
-  // 容器样式
   container: {
-    flex: 1,  // 弹性布局，占据剩余空间
-    backgroundColor: '#25292e',  // 背景色
-    justifyContent: 'center',  // 子元素垂直居中
-    alignItems: 'center',  // 子元素水平居中
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
+    gap: 8,
   },
-  // 文本样式
-  text: {
-    color: '#fff',  // 文本颜色为白色
-    fontSize: 24,  // 字体大小
-
+  title: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+    alignSelf: 'center',
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    color: '#f3f4f6',
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 8,
+  },
+  description: {
+    color: '#d1d5db',
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  link: {
+    color: '#60a5fa',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  meta: {
+    marginTop: 12,
+    color: '#9ca3af',
+    fontSize: 13,
+    alignSelf: 'center',
   },
 });
