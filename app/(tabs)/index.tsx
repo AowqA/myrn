@@ -14,8 +14,8 @@
 import domtoimage from 'dom-to-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import { useMemo, useRef, useState } from 'react';
-import { ImageSourcePropType, Platform, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, ImageSourcePropType, Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { captureRef } from 'react-native-view-shot';
 
@@ -42,6 +42,7 @@ const BuiltInStickerOptions: ImageSourcePropType[] = [
   { uri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f31f.png' },
 ];
 
+const DEFAULT_STICKER_SIZE = 40;
 const MIN_STICKER_SIZE = 24;
 const MAX_STICKER_SIZE = 96;
 
@@ -50,7 +51,7 @@ export default function Index() {
   const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
-  const [stickerSize, setStickerSize] = useState<number>(40);
+  const [stickerSize, setStickerSize] = useState<number>(DEFAULT_STICKER_SIZE);
   const [customStickers, setCustomStickers] = useState<ImageSourcePropType[]>([]);
 
   const [status, requestPermission] = MediaLibrary.usePermissions();
@@ -61,9 +62,11 @@ export default function Index() {
     [customStickers],
   );
 
-  if (status === null) {
-    requestPermission();
-  }
+  useEffect(() => {
+    if (status === null) {
+      requestPermission();
+    }
+  }, [requestPermission, status]);
 
   const pickImageAsync = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -81,19 +84,29 @@ export default function Index() {
   };
 
   const onAddCustomEmoji = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission required', 'Please allow photo library access to upload a custom emoji.');
+        return;
+      }
 
-    if (!result.canceled) {
-      const uploadedEmoji = { uri: result.assets[0].uri };
-      setCustomStickers(previous => [uploadedEmoji, ...previous]);
-      setPickedEmoji(uploadedEmoji);
-      setShowAppOptions(true);
-      onModalClose();
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        const uploadedEmoji = { uri: result.assets[0].uri };
+        setCustomStickers(previous => [uploadedEmoji, ...previous]);
+        setPickedEmoji(uploadedEmoji);
+        setShowAppOptions(true);
+        onModalClose();
+      }
+    } catch {
+      Alert.alert('Upload failed', 'Unable to upload emoji right now. Please try again.');
     }
   };
 
@@ -102,7 +115,7 @@ export default function Index() {
     setSelectedImage(undefined);
     setPickedEmoji(undefined);
     setIsModalVisible(false);
-    setStickerSize(40);
+    setStickerSize(DEFAULT_STICKER_SIZE);
   };
 
   const onAddSticker = () => {
@@ -118,6 +131,11 @@ export default function Index() {
   };
 
   const onRandomSticker = () => {
+    if (stickerOptions.length === 0) {
+      Alert.alert('No stickers available', 'Please add or upload a sticker first.');
+      return;
+    }
+
     const randomIndex = Math.floor(Math.random() * stickerOptions.length);
     setPickedEmoji(stickerOptions[randomIndex]);
     setShowAppOptions(true);

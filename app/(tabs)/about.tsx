@@ -1,29 +1,44 @@
-// 导入所需的 React Native 组件
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from 'react-native';
 
-// 导出默认的关于页面组件
 export default function AboutScreen() {
-    // 渲染组件 UI
-    return (
-        <View style={styles.container}>
-            <Text style={styles.text}>About Screen</Text>
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>About MyRN Sticker Editor</Text>
+      <Text style={styles.description}>
+        A lightweight Expo app for photo sticker editing.
+      </Text>
+      <Text style={styles.description}>
+        Features include emoji stickers, custom emoji upload, resize, randomize, clear, and save-to-gallery.
+      </Text>
+      <Text style={styles.meta}>Version: 1.0.0</Text>
+    </View>
+  );
 }
 
-// 定义组件的样式
 const styles = StyleSheet.create({
-  // 容器样式
   container: {
-    flex: 1,  // 弹性布局，占据剩余空间
-    backgroundColor: '#25292e',  // 背景色
-    justifyContent: 'center',  // 子元素垂直居中
-    alignItems: 'center',  // 子元素水平居中
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    gap: 12,
   },
-  // 文本样式
-  text: {
-    color: '#fff',  // 文本颜色为白色
-    fontSize: 24,  // 字体大小
-
+  title: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  description: {
+    color: '#d1d5db',
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  meta: {
+    marginTop: 8,
+    color: '#9ca3af',
+    fontSize: 13,
   },
 });
